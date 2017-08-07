@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>视频会议管理</title>
+	<title>login</title>
+	<link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/bootstrap-datetimepicker.min.css">
+    <style>
+        .navbar-fixed-top{
+            background-color: rgb(0,197,195);
+            color:rgb(255,255,255);
+            height:50px;line-height: 50px;
+            font-size:18px;
+        }
+        .search-container{
+            margin-top: 75px;
+            height:50px;
+        }
+        .datetime-value{
+            display: inline-block;
+            width:195px;height:35px;padding:6px 12px;
+            border:1px solid rgb(204,204,204);
+            border-radius: 5px
+        }
+        #search-btn{
+            display: inline-block;
+            width:75px;height:35px;padding:6px 12px;
+            margin-left: 10px;
+            border:1px solid rgb(173,173,173);
+            border-radius: 5px;
+            cursor:pointer;
+        }
+        #search-btn:hover{
+            background-color: rgb(234,234,234);
+        }
+        .info-total-num{
+            margin:0 25px 5px;color:rgb(128,128,128);
+        }
+        .content-container{
+            /*margin-top:100px;*/
+        }
+        .nav-list li{
+            list-style:none;
+            margin-top: 15px;
+            cursor:pointer;
+            font-size: 16px;            
+        }
+        .nav-list li:hover{
+            color:rgb(0,197,195);
+        }
+        .child-nav-list li{
+            font-size: 14px;
+        }
+        .nav-list li.active{
+            color:rgb(0,197,195);
+            border-right:3px rgb(0,197,195) solid;
+        }
+        .child-nav-list li.active{
+            border-width: 2px;
+        }
+        .table th,.table td{
+            height:40px;line-height: 40px;
+        }
+        .table-container{
+            padding-left:30px;
+        }
+        #btn-download{
+            margin-right: 10px;
+        }
+        .pagination-container{
+            width:600px;
+            left:5%;
+            margin-bottom: 80px;
+        }
+        .pagination-container li{
+            cursor: pointer;
+        }
+	</style>
+</head>
+<body>
+    <div class="container meeting-control" id="meeting-manage">
+        <div class="container-fluid">
+            <div class="nav navbar-fixed-top text-center">
+                视频会议管理
+            </div>  
+        </div>
+        <div class="search-container">
+            <div class="search"  v-show="table[0]">
+                <form class="pull-right form-inline">
+                   时间区间： 从 
+                   <input class="form-control" id="begin-datetime" @click.prevent="pickDatetime">
+                   到 
+                   <input class="form-control" id="end-datetime" @click.prevent="pickDatetime">
+                    发起人:
+                    <input type="text" class="form-control" id="sponsor-name" placeholder="全部">
+                    <div @click.prevent="turnToTab(2,true),getData({mode:3,table:0})" class="search-btn" id="search-btn">查询 <span class="glyphicon  glyphicon-search"></span></div>
+                </form>
+            </div>
+        </div>
+        <div class="info pull-right info-total-num">
+            一共{{total}}条数据 
+        </div>
+        <div class="row content-container container-fluid">
+            <div class="col-md-2 hidden-sm hidden-xs">
+                <ul class="text-left nav-list">
+                    <li @click="getTable(0)" :class="{active:table[0]}" >视频会议统计</li>
+                    <ul class="child-nav-list" v-show="table[0]">
+                        <li :class="{active:tab[0]}"@click.prevent="turnToTab(0)">最近一周</li>
+                        <li :class="{active:tab[1]}" @click.prevent="turnToTab(1)">最近一月</li>
+                        <li :class="{active:tab[2]}"@click.prevent="turnToTab(2)">全部</li>
+                    </ul>
+                    <li @click="getTable(1)" :class="{active:table[1]}">发起人会议次数</li>    
+                </ul>
+            </div>
+            <div class="table-container col-md-10">
+                <img src="img/nodata.svg" class="center-block" alt="" v-if="nodata" style="width:300px;height:300px">
+                <table class="table-0 table table-hover table-striped table-bordered" id="table-0"
+                    v-show="table[0] && !nodata">
+                    <thead>    
+                        <tr>
+                            <th>序号</th>
+                            <th>发起人</th>
+                            <th>会议主题</th>
+                            <th>开始时间</th>
+                            <th>结束时间</th>
+                            <th>会议ID</th>
+                            <th>发起人号码</th>
+                        </tr>
+                    </thead>
+                    <tbody class="tody-0" id="tbody-0">  
+                        <template v-for="(item,index) in list">
+                            <tr>
+                                <td>{{index+1}}</td>
+                                <td>{{item.chairmanName}}</td>
+                                <td>{{item.meetSubject}}</td>
+                                <td>{{item.meetDatetime}}</td>
+                                <td>{{item.endDatetime}}</td>
+                                <td>{{item.meetId}}</td>
+                                <td>{{item.chairmanPhone}}</td>
+                            </tr>
+                        </template>
+                    </tbody>
+               </table>
+               <table class="table-1 table table-hover table-striped table-bordered" id="table-1"
+                v-show="table[1] && !nodata">
+                   <thead>
+                       <tr>
+                           <th>序号</th> 
+                           <th>发起人</th>
+                           <th>会议次数</th>
+                           <th>操作</th>
+                       </tr>
+                   </thead>
+                   <tbody>
+                        <template v-for="(item,index) in countList">                       
+                           <tr>
+                               <td>{{index+1}}</td> 
+                               <td>{{item.username}}</td>
+                               <td>{{item.count}}</td>
+                               <td><button @click.prevent="getDetail(index)" class="btn btn-info">查看详情 </button></td>
+                           </tr>
+                        </template>                  
+                   </tbody>
+               </table>
+            </div>
+        </div> 
+        
+        <div v-if="pageList.length > 1" class="pagination-container center-block navbar-fixed-bottom text-center">
+            <nav aria-label="Page navigation">
+                <ul class="pagination">
+                    <li :class="{disabled:currentPage == 1}">
+                        <a @click.prevent="turnToPage" aria-label="Previous" id="pre">&laquo;</a>          
+                    </li>
+                    <template v-for="pageNum in pageList">
+                        <li v-if="pageNum<=maxPage && pageNum >=minPage" :class="{active:(pageNum === currentPage)}"><a @click.prevent="turnToPage" >{{pageNum}}</a></li>
+                    </template>
+                    <li :class="{disabled:currentPage == pageList.length}">
+                      <a @click.prevent="turnToPage" aria-label="Next">&raquo;</a> 
+                    </li>
+                </ul>
+            </nav>
+        </div>
+            
+        <button class="btn btn-success pull-right btn-download" id="btn-download" v-show="!nodata" @click.prevent="downloadTable">下载表格</button>  
+    
+    </div>
+</body>
+<script src="js/vue.min.js" ></script>    
+<script src="js/jquery-3.2.1.min.js"></script>
+<script src="js/bootstrap.min.js" ></script>
+<script src="js/bootstrap-datetimepicker.min.js"></script>
+<script src="js/bootstrap-datetimepicker.zh-CN.js"></script>
+ <script>
+    //可忽略
+    function init(){
+        var pickerOptions={
+                language:'zh-CN',
+                forceParse:false,
+                format: 'yyyy-mm-dd hh:ii',
+                autoclose:true,
+                showMeridian:true,
+                todayBtn:true
+        }
+        $('#begin-datetime').datetimepicker(pickerOptions)
+        $('#end-datetime').datetimepicker(pickerOptions)
+    }
+    //格式化时间日期
+    Date.prototype.Format=function(){
+        var fmt='';
+        //小于10的数字前面补0
+        function addZero(num){
+            var str = '';
+            if(num < 10){
+                str = '0'+num;
+            }else{
+                str=num;
+            }
+            return str;
+
+        }
+
+        var year=this.getFullYear(),
+            month=addZero(this.getMonth()+1),
+            date=addZero(this.getDate()),
+            hours=addZero(this.getHours()),
+            minutes=addZero(this.getMinutes());
+
+        fmt=year+'-'+month+'-'+date+' '+hours+':'+minutes;
+        return fmt;    
+    }
+
+    var meetingManage = new Vue({
+        el:'#meeting-manage',
+        data:{
+            table:[true,false],
+            currentTable:0,
+            tab:[true,false,false,false],
+            currentTab:0,
+            list:[],
+            countList:[],
+            total:0,
+            startDateTime:'',
+            endDateTime:'',
+            size:14,
+            pageList:[],
+            currentPage:1,
+            minPage:1, 
+            maxPage:5,
+            sponsorName:'',
+            nodata:false,       
+        },
+        methods:{
+            // num:table索引
+            // onlyVison:Boolean值，只在视觉上切换表格，不取数据,默认false
+            getTable:function(num,onlyVison){
+                console.log('tab',this.currentTab)
+                this.currentPage = 1;
+                this.currentTable = num;
+                for(let i in this.table){
+                    this.table[i] = false
+                }
+                Vue.set(this.table,num,true)
+                if(!onlyVison){
+                    if(num === 0){
+                        this.getData({table:num,mode:this.currentTab});
+                    }else if(num === 1){
+                        this.getData({table:num});
+                    }
+                }
+            },
+            turnToTab:function(num,onlyVison){
+                this.currentPage = 1;
+                this.currentTab = num;
+                for(let i in this.tab){
+                    this.tab[i]=false
+                }
+                Vue.set(this.tab,num,true)
+                if(!onlyVison){
+                    this.getData({mode:num,table:this.currentTable})
+                }
+                
+            },
+            pickDatetime:function(event){
+
+                if(event){
+                    var selector='#'+event.currentTarget.id;
+                    var that = this
+                    $(selector).datetimepicker(that.timepicker)
+                }
+            },
+            //  取得数据函数 
+            //  参数obj选项及其说明如下
+            //  mode:0最近一周,1最近一月,2全部(默认值),3按照起止时间查询
+            //  table: 0视频会议统计表格(默认值),1发起人会议次数表格
+            getData:function(obj){
+                var temp = new Date();
+                var searchBeginTimeEl=$('#begin-datetime');
+                var searchEndTimeEl=$('#end-datetime');
+                var url='http://192.168.17.200:8086/search/';
+
+
+
+                if(!obj){
+                    obj = {
+                        mode:2,
+                        table:0,
+                    }
+                }
+                if(obj.mode === undefined){
+                    obj.mode = 2;
+                }
+                if(obj.table === undefined){
+                    obj.table = 0;
+                }
+
+                if(obj.table === 0){
+                    url += 'list?';
+                    this.size = 14;
+                }else if(obj.table === 1){
+                    url += 'countList?';
+                    this.size = 11;
+                }
+
+                console.log('obj',obj);
+
+                switch(obj.mode){
+                    case 0:{
+                        temp.setDate(temp.getDate()-7);
+                        temp=temp.Format();
+                        searchBeginTimeEl.val(temp);
+                        searchEndTimeEl.val((new Date()).Format());
+                        break;
+                    }
+                    case 1:{
+                        temp.setMonth(temp.getMonth()-1);
+                        temp=temp.Format();
+                        searchBeginTimeEl.val(temp);
+                        searchEndTimeEl.val((new Date()).Format());
+                        break;
+                    }
+                    case 2:{
+                        // temp.setMonth(temp.getMonth()-1);
+                        temp='2017-01-01 00:00'
+                        searchBeginTimeEl.val(temp);
+                        searchEndTimeEl.val((new Date()).Format());
+                        break;    
+                    }
+                    case 3:{
+                        if(!searchBeginTimeEl.val()){
+                            alert('请选择开始时间');
+                            return;
+                        }else if(!searchEndTimeEl.val()){
+                            alert('请选择结束时间');
+                            return;
+                        }else if(searchBeginTimeEl.val() >= searchEndTimeEl.val()){
+                           alert('结束时间要在开始时间之后，请重新选择');
+                            $('#begin-datetime,#end-datetime').val('');
+                            return;
+                        }
+                        break;            
+                    }
+                    default: 
+                        break;
+                }       
+
+
+
+                this.startDatetime = $('#begin-datetime').val();  
+                this.endDatetime = $('#end-datetime').val();  
+                this.sponsorName = $('#sponsor-name').val();
+                url += 'page='+this.currentPage+'&size='+this.size+'&startTime='+this.startDatetime.replace(' ','+')+'&endTime='+this.endDatetime.replace(' ','+')+'&name='+encodeURI(this.sponsorName);
+                console.log(url);
+                var that=this;
+                $.ajax({
+                    type:'get',
+                    url:url,
+                    dataType:'json',
+                    success:function(result){
+                        console.log('success')
+                        console.log(result.data)
+                        that.pageList=[];
+                        var data=result.data;
+                        if(data && data.total != 0){
+                            that.nodata = false;
+                            for(let i=1;i<=Math.ceil(data.total/that.size);i++){
+                                that.pageList.push(i);
+                            }
+                            if(obj.table === 0){
+                                that.list = data.list
+                            }else if(obj.table === 1){
+                                that.countList = data.list;
+                            }
+                            that.total = data.total;
+                        }else{
+                            that.nodata = true;
+                        }
+
+                    },
+                    error:function(){
+                        that.nodata = true;
+                    }
+                })                
+            },
+            turnToPage:function(event){
+                var  text=event.currentTarget.text;
+                if(!isNaN(parseInt(text))){
+                    this.currentPage=parseInt(text);
+                }else{
+                    var pre = $('#pre').text();
+                    if(text === pre){
+                        this.currentPage=this.currentPage-1;
+                    }else{
+                        this.currentPage=this.currentPage+1;
+                    }
+                }
+                if(this.currentPage === this.maxPage && this.currentPage!=this.pageList.length){
+                    this.minPage=this.currentPage-1;
+                    this.maxPage=this.currentPage+3;
+                }else if(this.currentPage == this.minPage && this.currentPage!=1){
+                    this.minPage=this.currentPage-3;
+                    this.maxPage=this.currentPage+1;
+                }
+
+                if(this.minPage<1){
+                    this.minPage=1;
+                }
+                if(this.maxPage>this.pageList.length){
+                    this.maxPage=this.pageList.length;
+                }
+
+                console.log('currentPage',this.currentPage)
+                console.log('minPage',this.minPage)
+                console.log('maxPage',this.maxPage)
+
+                this.getData({
+                    table:this.currentTable,
+                    mode:this.currentTab,
+                })
+
+            },
+            getDetail:function(index){
+                this.getTable(0,true);
+                this.turnToTab(2,true);
+                $('#sponsor-name').val(this.countList[index].username);
+                this.getData({table:0,mode:2});
+            },
+            downloadTable:function(){
+                var url='';
+                if(this.table[0]){
+                    console.log('sponsorName',this.sponsorName)
+                    url='http://192.168.17.200:8086/search/download?startTime='+this.startDatetime.replace(' ','+')+'&endTime='+this.endDatetime.replace(' ','+');  //+'&name='+encodeURI(this.sponsorName)
+
+                    // url = 192.168.17.200:8086/search/download?startTime=2017-01-26+00:00&endTime=2017-08-07+14:09
+                    console.log(url);
+                    window.location=url;
+                }else if(this.table[1]){
+                    alert('暂无数据');
+                }
+                // $.ajax({
+                //     type:'get',
+                //     url:url,
+                //     success:function(){
+                //         console.log('download')
+                //         window.location=url;
+                //     }
+                // })                
+            }
+        },
+        mounted:function(){
+                init()
+                this.getData({mode:0})
+        }
+    })  
+   
+</script>
+</html>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>login</title>
+	<link rel="stylesheet" href="css/bootstrap.min.css">
+	<link href='http://cdn.webfont.youziku.com/webfonts/nomal/105831/46724/597ff371f629d817982abb7a.css' rel='stylesheet' type='text/css' />
+	<link rel="stylesheet" href="css/dialog.css">
+	<style>
+		div{
+			margin:0;
+			padding:0;
+		}
+		.title{
+			margin:120px auto;
+			/*font-family:'lixukemaobixsc40eb9d3d19d67';*/
+			font-family:'TSSunOldc40f83a4d19d67';
+			font-size:40px;
+			color:rgb(255,255,255);
+			cursor:default;
+		}
+		body{
+			background-image: url(img/cup-of-coffee-1280537_1920.jpg);
+			/*background-repeat: no-repeat;*/
+			/*background-size:cover;*/
+		}
+		form{
+			position:absolute;
+			width:330px;height:200px;
+			top:50%;left:50%;
+			transform: translate(-50%,-45%);
+		}
+		form .tab{
+			margin-bottom: 15px;
+			color:rgb(153,153,153);
+			font-size:18px;
+			/*cursor:default;*/
+
+		}
+		form .tab.selected{
+			color:rgb(0,197,195);
+			border-bottom: 2px solid rgb(0,197,195); 
+		}
+		form .tab:hover{
+			color:rgb(0,197,195);
+		}
+		.warn-message{
+			font-size: 12px;
+		}
+		img{
+			height:25px;
+		}
+		.input-group{
+			margin-bottom: 15px;
+		}
+		div.input-container{
+			box-sizing: border-box;
+			padding:0;
+		}
+
+		button.btn{
+			border-radius:20px;
+			opacity: .8;
+		}
+		button.submit{
+			color:rgb(255,255,255);
+			background-color: rgba(0, 197, 195,.8);
+		}
+		button.submit:hover{
+			color:rgb(255,255,255);
+			background-color: rgb(0,197,195);
+		}
+		.forgot-psw{
+			margin-top: 5px;
+			font-size: 12px;
+			color:rgb(153,153,153);
+			cursor:pointer;
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<div class="title text-center">
+				多方视频会议
+			<div> 管理系统</div>
+		</div>
+		<form action="" id="form" novalidate>
+			<div class="tab-container text-center row">
+				<div @click="selectLogin" :class="{selected:toLogin}" class="tab tab-1 col-xs-3">登录</div>
+			</div>
+			<div class="row input-group">
+				<img class="col-xs-2" src="img/user-name.svg" alt="" style="padding-right:0;color:black">
+				<div class="col-xs-10 input-continer" style="padding-left:5px;">
+					<input v-model:value.trim="username" type="text" name="username" class="form-item form-control" style="width:280px;opacity: .5;" required placeholder="请输入用户名">
+				</div>
+				
+			</div>
+			
+			<div class="row input-group">
+				<img class="col-xs-2" src="img/password.svg" alt="" style="padding-right:0">
+				<div class="col-xs-10 input-continer" style="padding-left:5px;">
+					<input v-model:value.trim="psw" type="password" name="password" class="form-item form-control" style="width:280px;opacity: .5;"  required placeholder="请输入登录密码">
+				</div>
+			</div>
+			<button @click.prevent="submit" type="submit" class="submit btn btn-block">{{btnText}}</button>
+			<div v-show="toLogin" class="pull-right forgot-psw">
+				忘记密码
+			</div>
+		</form>
+	</div>
+</body>
+<script src="js/vue.min.js"></script>
+<script src="js/zepto.min.js"></script>
+<script src="js/dialog.min.js"></script>
+<script>
+	var form = new Vue({
+		el:'#form',
+		data:{
+			username:'',
+			psw:'',
+			toLogin:true,
+			toRegister:false,
+			btnText:'登录',
+			// wrongInput:true,
+		},
+		methods:{
+			test:function(){
+				alert('hhh')
+			},
+			loading:function(content){
+				$(document).dialog({
+			        type : 'notice',
+			        infoIcon: '../img/loading.gif',
+			        infoText: content,
+			        autoClose: 2500
+			    });
+			},
+			notice:function(message){
+				 $(document).dialog({
+			        type : 'notice',
+			        infoText: message,
+			        autoClose: 1000,
+			        position: 'center'  // center: 居中; bottom: 底部
+			    });
+			},
+			submit:function(){
+				if(this.username===''){
+					this.notice('请输入用户名')
+				}else if(this.psw===''){
+					this.notice('请输入登录密码');
+				}else{
+					// $('#form').submit();
+					var that=this;
+					var url='http://192.168.17.200:8086/search/login/?username='+that.username+'&password='+that.psw;
+					console.log(that.username)
+					console.log(that.psw)
+					$.ajax({
+						type:'get',
+						url:url,
+						dataType:'json',
+						success:function(data){
+							console.log('success')
+							console.log(data.code)
+							if(data.code === -1){
+								that.notice('用户名或密码错误')
+								that.psw='';
+							}else{
+								window.open('meetingManage.html','_self')
+							}
+						},
+						error:function(){
+							that.notice('服务器错误')
+						}
+					})
+				}
+			},
+			selectLogin:function(){
+				this.toLogin=true
+				this.toRegister=false
+				this.btnText="登录"
+			},
+			selectRegister:function(){
+				this.toRegister=true
+				this.toLogin=false
+				this.btnText="注册"
+			}
+
+		}
+	})
+</script>
+</html>
