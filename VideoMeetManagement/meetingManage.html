@@ -6,6 +6,7 @@
 	<title>login</title>
 	<link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/bootstrap-datetimepicker.min.css">
+    <link rel="stylesheet" href="css/sweetalert.css">
     <style>
         .navbar-fixed-top{
             background-color: rgb(0,197,195);
@@ -81,7 +82,7 @@
 <body>
     <div class="container meeting-control" id="meeting-manage">
         <div class="container-fluid">
-            <div class="nav navbar-fixed-top text-center">
+            <div v-if="!nodata" class="nav navbar-fixed-top text-center">
                 视频会议管理
             </div>  
         </div>
@@ -98,7 +99,7 @@
                 </form>
             </div>
         </div>
-        <div class="info pull-right info-total-num">
+        <div class="info pull-right info-total-num" v-if="!nodata">
             一共{{total}}条数据 
         </div>
         <div class="row content-container container-fluid">
@@ -191,7 +192,9 @@
 <script src="js/bootstrap.min.js" ></script>
 <script src="js/bootstrap-datetimepicker.min.js"></script>
 <script src="js/bootstrap-datetimepicker.zh-CN.js"></script>
+ <script src="js/sweetalert.min.js"></script>
  <script>
+
     //可忽略
     function init(){
         var pickerOptions={
@@ -298,9 +301,7 @@
                 var searchBeginTimeEl=$('#begin-datetime');
                 var searchEndTimeEl=$('#end-datetime');
                 var url='http://192.168.17.200:8086/search/';
-
-
-
+                
                 if(!obj){
                     obj = {
                         mode:2,
@@ -348,13 +349,13 @@
                     }
                     case 3:{
                         if(!searchBeginTimeEl.val()){
-                            alert('请选择开始时间');
+                            swal('请选择开始时间');
                             return;
                         }else if(!searchEndTimeEl.val()){
-                            alert('请选择结束时间');
+                            swal('请选择结束时间');
                             return;
                         }else if(searchBeginTimeEl.val() >= searchEndTimeEl.val()){
-                           alert('结束时间要在开始时间之后，请重新选择');
+                           swal('结束时间要在开始时间之后，请重新选择');
                             $('#begin-datetime,#end-datetime').val('');
                             return;
                         }
@@ -450,21 +451,11 @@
                 if(this.table[0]){
                     console.log('sponsorName',this.sponsorName)
                     url='http://192.168.17.200:8086/search/download?startTime='+this.startDatetime.replace(' ','+')+'&endTime='+this.endDatetime.replace(' ','+');  //+'&name='+encodeURI(this.sponsorName)
-
-                    // url = 192.168.17.200:8086/search/download?startTime=2017-01-26+00:00&endTime=2017-08-07+14:09
                     console.log(url);
                     window.location=url;
                 }else if(this.table[1]){
-                    alert('暂无数据');
+                    swal('暂无数据');
                 }
-                // $.ajax({
-                //     type:'get',
-                //     url:url,
-                //     success:function(){
-                //         console.log('download')
-                //         window.location=url;
-                //     }
-                // })                
             }
         },
         mounted:function(){
