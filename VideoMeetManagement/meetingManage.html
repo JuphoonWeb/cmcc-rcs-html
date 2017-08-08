@@ -192,11 +192,13 @@
 <script src="js/bootstrap.min.js" ></script>
 <script src="js/bootstrap-datetimepicker.min.js"></script>
 <script src="js/bootstrap-datetimepicker.zh-CN.js"></script>
- <script src="js/sweetalert.min.js"></script>
- <script>
+<script src="js/sweetalert.min.js"></script>
+<script src="js/cookie.js"></script>
+<script>
 
     //可忽略
     function init(){
+        setCookie('login','logged',30,true);
         var pickerOptions={
                 language:'zh-CN',
                 forceParse:false,
@@ -297,6 +299,17 @@
             //  mode:0最近一周,1最近一月,2全部(默认值),3按照起止时间查询
             //  table: 0视频会议统计表格(默认值),1发起人会议次数表格
             getData:function(obj){
+                
+                if(!getCookie('login')){
+                    swal(
+                        {   title:'提示',
+                            text:'超过30分钟无操作，请重新登录',
+                        },
+                        function(){
+                            window.open('login.html','_self');
+                    });
+                    return;
+                }
                 var temp = new Date();
                 var searchBeginTimeEl=$('#begin-datetime');
                 var searchEndTimeEl=$('#end-datetime');
@@ -349,13 +362,22 @@
                     }
                     case 3:{
                         if(!searchBeginTimeEl.val()){
-                            swal('请选择开始时间');
+                            swal({
+                                title:'提示',
+                                text:'请选择开始时间'
+                            });
                             return;
                         }else if(!searchEndTimeEl.val()){
-                            swal('请选择结束时间');
+                            swal({
+                                title:'提示',
+                                text:'请选择结束时间'
+                            });
                             return;
                         }else if(searchBeginTimeEl.val() >= searchEndTimeEl.val()){
-                           swal('结束时间要在开始时间之后，请重新选择');
+                           swal({
+                                title:'提示',
+                                text:'结束时间要在开始时间之后，请重新选择'
+                            });
                             $('#begin-datetime,#end-datetime').val('');
                             return;
                         }
@@ -370,15 +392,17 @@
                 this.startDatetime = $('#begin-datetime').val();  
                 this.endDatetime = $('#end-datetime').val();  
                 this.sponsorName = $('#sponsor-name').val();
-                url += 'page='+this.currentPage+'&size='+this.size+'&startTime='+this.startDatetime.replace(' ','+')+'&endTime='+this.endDatetime.replace(' ','+')+'&name='+encodeURI(this.sponsorName);
+                url += 'page='+this.currentPage+'&size='+this.size+'&startTime='+this.startDatetime.replace(' ','+')+'&endTime='+this.endDatetime.replace(' ','+')+'&name='+encodeURIComponent(this.sponsorName);
                 console.log(url);
                 var that=this;
                 $.ajax({
                     type:'get',
+                    accepts:'Set-Cookie',
                     url:url,
                     dataType:'json',
                     success:function(result){
                         console.log('success')
+                        console.log(result)
                         console.log(result.data)
                         that.pageList=[];
                         var data=result.data;
@@ -396,11 +420,14 @@
                         }else{
                             that.nodata = true;
                         }
-
                     },
                     error:function(){
                         that.nodata = true;
+                    },
+                    complete:function(){
+                        setCookie('login','logined',30,true);
                     }
+
                 })                
             },
             turnToPage:function(event){
