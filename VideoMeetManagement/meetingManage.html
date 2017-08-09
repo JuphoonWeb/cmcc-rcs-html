@@ -333,10 +333,10 @@
                 }
                 
                 var temp = new Date();
-                var searchBeginTimeEl=$('#begin-datetime');
-                var searchEndTimeEl=$('#end-datetime');
-                var url='http://192.168.17.200:8086/search/';
-                
+                var searchBeginTimeEl = $('#begin-datetime');
+                var searchEndTimeEl = $('#end-datetime');
+                // var url = 'http://192.168.17.200:8086/search/';
+                var url = 'http://122.227.209.194:8086/search/';
                 if(!obj){
                     obj = {
                         mode:2,
@@ -509,7 +509,8 @@
                 var url='';
                 if(this.table[0]){
                     console.log('sponsorName',this.sponsorName)
-                    url='http://192.168.17.200:8086/search/download?startTime='+this.startDatetime.replace(' ','+')+'&endTime='+this.endDatetime.replace(' ','+')+'&name='+encodeURI(this.sponsorName);
+                    // url='http://192.168.17.200:8086/search/download?startTime='+this.startDatetime.replace(' ','+')+'&endTime='+this.endDatetime.replace(' ','+')+'&name='+encodeURI(this.sponsorName);
+                    url='http://122.227.209.194:8086/search/download?startTime='+this.startDatetime.replace(' ','+')+'&endTime='+this.endDatetime.replace(' ','+')+'&name='+encodeURI(this.sponsorName);
                     console.log(url);
                     window.location=url;
                 }else if(this.table[1]){
