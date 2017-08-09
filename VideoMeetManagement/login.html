@@ -103,9 +103,9 @@
 				</div>
 			</div>
 			<button @click.prevent="submit" type="submit" class="submit btn btn-block">{{btnText}}</button>
-			<div v-show="toLogin" class="pull-right forgot-psw">
+			<!-- <div v-show="toLogin" class="pull-right forgot-psw">
 				忘记密码
-			</div>
+			</div> -->
 		</form>
 	</div>
 </body>
@@ -172,7 +172,9 @@
 								that.psw='';
 							}else{
 								setCookie('login',that.username,30,true);
-								window.open('meetingManage.html','_self')
+								setCookie('loginName',that.username,30);
+								window.open('meetingManage.html','_self');
+
 							}
 						},
 						error:function(){
@@ -193,6 +195,10 @@
 				this.btnText="注册"
 			}
 
+		},
+		mounted:function(){
+			removeCookie('login');
+			this.userame = getCookie('loginName');
 		}
 	})
 </script>

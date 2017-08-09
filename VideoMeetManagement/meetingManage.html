@@ -90,11 +90,11 @@
             <div class="search"  v-show="table[0]">
                 <form class="pull-right form-inline">
                    时间区间： 从 
-                   <input class="form-control" id="begin-datetime" @click.prevent="pickDatetime">
+                   <input class="form-control" id="begin-datetime" @focus="pickDatetime">
                    到 
-                   <input class="form-control" id="end-datetime" @click.prevent="pickDatetime">
+                   <input class="form-control" id="end-datetime" @focus="pickDatetime">
                     发起人:
-                    <input type="text" class="form-control" id="sponsor-name" placeholder="全部">
+                    <input @focus="checkLogin" type="text" class="form-control" id="sponsor-name" placeholder="全部">
                     <div @click.prevent="turnToTab(2,true),getData({mode:3,table:0})" class="search-btn" id="search-btn">查询 <span class="glyphicon  glyphicon-search"></span></div>
                 </form>
             </div>
@@ -183,7 +183,7 @@
             </nav>
         </div>
             
-        <button class="btn btn-success pull-right btn-download" id="btn-download" v-show="!nodata" @click.prevent="downloadTable">下载表格</button>  
+        <button class="btn btn-success pull-right btn-download" id="btn-download" v-show="table[0] && !nodata" @click.prevent="downloadTable">下载表格</button>  
     
     </div>
 </body>
@@ -198,7 +198,7 @@
 
     //可忽略
     function init(){
-        setCookie('login','logged',30,true);
+        // 
         var pickerOptions={
                 language:'zh-CN',
                 forceParse:false,
@@ -260,6 +260,10 @@
             // onlyVison:Boolean值，只在视觉上切换表格，不取数据,默认false
             getTable:function(num,onlyVison){
                 console.log('tab',this.currentTab)
+                if(!this.checkLogin()){
+                    return;
+                }
+                
                 this.currentPage = 1;
                 this.currentTable = num;
                 for(let i in this.table){
@@ -277,6 +281,10 @@
             turnToTab:function(num,onlyVison){
                 this.currentPage = 1;
                 this.currentTab = num;
+                if(!this.checkLogin()){
+                    return;
+                }
+                
                 for(let i in this.tab){
                     this.tab[i]=false
                 }
@@ -286,20 +294,7 @@
                 }
                 
             },
-            pickDatetime:function(event){
-
-                if(event){
-                    var selector='#'+event.currentTarget.id;
-                    var that = this
-                    $(selector).datetimepicker(that.timepicker)
-                }
-            },
-            //  取得数据函数 
-            //  参数obj选项及其说明如下
-            //  mode:0最近一周,1最近一月,2全部(默认值),3按照起止时间查询
-            //  table: 0视频会议统计表格(默认值),1发起人会议次数表格
-            getData:function(obj){
-                
+            checkLogin:function(){
                 if(!getCookie('login')){
                     swal(
                         {   title:'提示',
@@ -308,8 +303,35 @@
                         function(){
                             window.open('login.html','_self');
                     });
+                    return false;
+                }else{
+                    setCookie('login','logged',30,true);
+                    return true;
+                }
+            },
+            pickDatetime:function(event){
+                
+                if(!this.checkLogin()){
                     return;
                 }
+                
+                if(event){
+                    var selector='#'+event.currentTarget.id;
+                    var that = this
+                    $(selector).datetimepicker(that.timepicker)
+                }
+            },
+            
+            //  取得数据函数 
+            //  参数obj选项及其说明如下
+            //  mode:0最近一周,1最近一月,2全部(默认值),3按照起止时间查询
+            //  table: 0视频会议统计表格(默认值),1发起人会议次数表格
+            getData:function(obj){
+                
+                if(!this.checkLogin()){
+                    return;
+                }
+                
                 var temp = new Date();
                 var searchBeginTimeEl=$('#begin-datetime');
                 var searchEndTimeEl=$('#end-datetime');
@@ -430,6 +452,10 @@
                 })                
             },
             turnToPage:function(event){
+                if(!this.checkLogin()){
+                    return;
+                }
+                
                 var  text=event.currentTarget.text;
                 if(!isNaN(parseInt(text))){
                     this.currentPage=parseInt(text);
@@ -464,28 +490,39 @@
                     table:this.currentTable,
                     mode:this.currentTab,
                 })
-
             },
             getDetail:function(index){
+                if(!this.checkLogin()){
+                    return;
+                }
+                
                 this.getTable(0,true);
                 this.turnToTab(2,true);
                 $('#sponsor-name').val(this.countList[index].username);
                 this.getData({table:0,mode:2});
             },
             downloadTable:function(){
+                if(!this.checkLogin()){
+                    return;
+                }
+                
                 var url='';
                 if(this.table[0]){
                     console.log('sponsorName',this.sponsorName)
-                    url='http://192.168.17.200:8086/search/download?startTime='+this.startDatetime.replace(' ','+')+'&endTime='+this.endDatetime.replace(' ','+');  //+'&name='+encodeURI(this.sponsorName)
+                    url='http://192.168.17.200:8086/search/download?startTime='+this.startDatetime.replace(' ','+')+'&endTime='+this.endDatetime.replace(' ','+')+'&name='+encodeURI(this.sponsorName);
                     console.log(url);
                     window.location=url;
                 }else if(this.table[1]){
-                    swal('暂无数据');
+                    swal({
+                        title:'提示',
+                        text:'暂无数据'
+                    });
                 }
             }
         },
         mounted:function(){
                 init()
+                // setCookie('login',getCookie('login'),30,true);
                 this.getData({mode:0})
         }
     })  
