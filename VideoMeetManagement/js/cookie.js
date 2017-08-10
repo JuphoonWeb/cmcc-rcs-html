@@ -27,7 +27,7 @@ function getCookie(name){
 			if(startIndex != -1){
 				startIndex = startIndex+name.length+1;
 				var endIndex = cookieStr.indexOf(';',startIndex);
-				if(endIndex = -1){
+				if(endIndex === -1){
 					endIndex = cookieStr.length;
 				}
 				return decodeURIComponent(cookieStr.substring(startIndex,endIndex));

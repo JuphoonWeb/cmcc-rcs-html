@@ -77,14 +77,62 @@
         .pagination-container li{
             cursor: pointer;
         }
+        .logout{
+            display: inline-block;
+            position:absolute;
+            right:14%;
+            cursor: default;
+        }
+        .logout .login-name{
+            width:120px;
+            padding:0 5px;
+        }
+        .logout:hover .login-name{
+            background-color: rgb(0,207,205);
+        }
+        .logout:hover .dropdown-list{
+            display: block;
+        }
+        .logout .dropdown-list{
+             display: none;
+             width:120px;
+             color:rgb(0,0,0);
+             font-size:14px;
+             border:1px rgb(234,234,234) solid;
+             box-shadow: 1px 2px rgb(234,234,234);
+             background-color: rgb(255,255,255);
+        }
+        .logout .dropdown-item{
+             width:100%;
+             height:30px;
+             line-height: 30px;
+             background-color: rgb(255,255,255);
+             padding:0 15px;
+             margin:5px 0;
+        }
+        .logout .dropdown-item:hover{
+            background-color: rgb(240,240,240);
+        }
+        .logout .dropdown-item img{
+            margin-right: 10px;
+        }
 	</style>
 </head>
 <body>
     <div class="container meeting-control" id="meeting-manage">
         <div class="container-fluid">
             <div v-if="!nodata" class="nav navbar-fixed-top text-center">
-                视频会议管理
-            </div>  
+                <span>视频会议管理</span>
+                <div class="logout dropdown pull-right" v-if="loginName != '' ">
+                   <div class="login-name" >
+                       {{loginName}} <img src="img/dropdown.svg" alt="">
+                   </div>
+                   <div class="dropdown-list text-left">
+                       <div class="dropdown-item"  @click="logout"><img src="img/log-out.svg" alt=""> 退出</div>
+                   </div>
+                </div>    
+            </div>
+
         </div>
         <div class="search-container">
             <div class="search"  v-show="table[0]">
@@ -238,6 +286,8 @@
     var meetingManage = new Vue({
         el:'#meeting-manage',
         data:{
+            loginName:'',
+            dropdown:false, //true则下拉菜单显示
             table:[true,false],
             currentTable:0,
             tab:[true,false,false,false],
@@ -260,7 +310,7 @@
             // onlyVison:Boolean值，只在视觉上切换表格，不取数据,默认false
             getTable:function(num,onlyVison){
                 console.log('tab',this.currentTab)
-                if(!this.checkLogin()){
+                if(!this.checkLogin(true)){
                     return;
                 }
                 
@@ -281,7 +331,7 @@
             turnToTab:function(num,onlyVison){
                 this.currentPage = 1;
                 this.currentTab = num;
-                if(!this.checkLogin()){
+                if(!this.checkLogin(true)){
                     return;
                 }
                 
@@ -294,11 +344,15 @@
                 }
                 
             },
-            checkLogin:function(){
+            checkLogin:function(timeout){
+                var text = '请重新登录';
+                if(timeout){
+                    text = '超过30分钟无操作，'+text;
+                }
                 if(!getCookie('login')){
                     swal(
                         {   title:'提示',
-                            text:'超过30分钟无操作，请重新登录',
+                            text:text,
                         },
                         function(){
                             window.open('login.html','_self');
@@ -311,7 +365,7 @@
             },
             pickDatetime:function(event){
                 
-                if(!this.checkLogin()){
+                if(!this.checkLogin(true)){
                     return;
                 }
                 
@@ -328,7 +382,7 @@
             //  table: 0视频会议统计表格(默认值),1发起人会议次数表格
             getData:function(obj){
                 
-                if(!this.checkLogin()){
+                if(!this.checkLogin(true)){
                     return;
                 }
                 
@@ -452,7 +506,7 @@
                 })                
             },
             turnToPage:function(event){
-                if(!this.checkLogin()){
+                if(!this.checkLogin(true)){
                     return;
                 }
                 
@@ -492,7 +546,7 @@
                 })
             },
             getDetail:function(index){
-                if(!this.checkLogin()){
+                if(!this.checkLogin(true)){
                     return;
                 }
                 
@@ -502,7 +556,7 @@
                 this.getData({table:0,mode:2});
             },
             downloadTable:function(){
-                if(!this.checkLogin()){
+                if(!this.checkLogin(true)){
                     return;
                 }
                 
@@ -519,11 +573,18 @@
                         text:'暂无数据'
                     });
                 }
+            },
+            logout:function(){
+                removeCookie('login');
+                window.open('login.html','_self');
             }
         },
         mounted:function(){
                 init()
-                // setCookie('login',getCookie('login'),30,true);
+                if(!this.checkLogin()){
+                    return;
+                }
+                this.loginName = getCookie('loginName')
                 this.getData({mode:0})
         }
     })  
