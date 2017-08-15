@@ -154,7 +154,7 @@
 					// $('#form').submit();
 					var that=this;
 					// var url='http://192.168.17.200:8086/search/login/?username='+that.username+'&password='+that.psw;
-					var url='http://122.227.209.194:8086/search/login/?username='+that.username+'&password='+that.psw;
+					var url='http://120.27.131.68:8086/search/login/?username='+that.username+'&password='+that.psw;
 					console.log(that.username)
 					var notice = that.notice('正在登录',3000)
 					$.ajax({
@@ -162,6 +162,9 @@
 						url:url,
 						dataType:'json',
 						timeout:3000,
+						xhrFields: {  
+                         	withCredentials: true  
+                    	},
 						success:function(data){
 							console.log('success')
 							console.log(data.code)
