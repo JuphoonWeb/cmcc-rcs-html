@@ -317,6 +317,9 @@
                 }
                 
                 this.currentPage = 1;
+                this.minPage = 1; 
+                this.maxPage = 5;
+
                 this.currentTable = num;
                 for(let i in this.table){
                     this.table[i] = false
@@ -332,6 +335,9 @@
             },
             turnToTab:function(num,onlyVison){
                 this.currentPage = 1;
+                this.minPage = 1; 
+                this.maxPage = 5;
+                
                 this.currentTab = num;
                 if(!this.checkLogin(true)){
                     return;
@@ -465,13 +471,11 @@
                         break;
                 }       
 
-
-
                 this.startDatetime = $('#begin-datetime').val();  
                 this.endDatetime = $('#end-datetime').val();  
                 this.sponsorName = $('#sponsor-name').val();
                 url += 'page='+this.currentPage+'&size='+this.size+'&startTime='+this.startDatetime.replace(' ','+')+'&endTime='+this.endDatetime.replace(' ','+')+'&name='+encodeURIComponent(this.sponsorName);
-                console.log(url);
+                // console.log(url);
                 var that=this;
                 $.ajax({
                     type:'get',
@@ -481,8 +485,8 @@
                         console.log('success')
                         console.log(result)
                         console.log(result.data)
-                        that.pageList=[];
-                        var data=result.data;
+                        that.pageList = [];
+                        var data = result.data;
                         if(data && data.total != 0){
                             that.nodata = false;
                             for(let i=1;i<=Math.ceil(data.total/that.size);i++){
@@ -511,7 +515,6 @@
                 if(!this.checkLogin(true)){
                     return;
                 }
-                
                 var  text=event.currentTarget.text;
                 if(!isNaN(parseInt(text))){
                     this.currentPage=parseInt(text);

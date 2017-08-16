@@ -140,7 +140,7 @@
 				 var notice = $(document).dialog({
 			        type : 'notice',
 			        infoText: message,
-			        autoClose: milliSec,
+			        autoClose: milliSec || 1000,
 			        position: 'center'  // center: 居中; bottom: 底部
 			    });
 				 return notice;
