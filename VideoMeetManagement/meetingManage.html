@@ -182,7 +182,7 @@
                     <tbody class="tody-0" id="tbody-0">  
                         <template v-for="(item,index) in list">
                             <tr>
-                                <td>{{index+1}}</td>
+                                <td>{{itemSequence(index)}}</td>
                                 <td>{{item.chairmanName}}</td>
                                 <td>{{item.meetSubject}}</td>
                                 <td>{{item.meetDatetime}}</td>
@@ -206,7 +206,7 @@
                    <tbody>
                         <template v-for="(item,index) in countList">                       
                            <tr>
-                               <td>{{index+1}}</td> 
+                               <td>{{itemSequence(index)}}</td> 
                                <td>{{item.username}}</td>
                                <td>{{item.count}}</td>
                                <td><button @click.prevent="getDetail(index)" class="btn btn-info">查看详情 </button></td>
@@ -511,6 +511,9 @@
                     }
 
                 })                
+            },
+            itemSequence: function(index) {
+                return (index+1)+(this.currentPage-1)*this.size
             },
             turnToPage:function(event){
                 if(!this.checkLogin(true)){
